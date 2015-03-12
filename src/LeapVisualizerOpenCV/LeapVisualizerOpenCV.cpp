@@ -19,7 +19,9 @@ using namespace Leap;
 
 
 
-// Begin OpenCV variables
+/**************************
+ * Begin OpenCV variables *
+ **************************/
 IplImage *cv_leftImage  = NULL,
          *cv_rightImage = NULL;
 CvSize cv_szLeftImage  = cvSize(FORMAT_LEAP_IMAGE_WIDTH,FORMAT_LEAP_IMAGE_HEIGHT),
@@ -30,6 +32,13 @@ IplImage *cv_leftImageUndistorted  = NULL,
 CvSize cv_szLeftImageUndistorted  = cvSize(FORMAT_LEAP_IMAGE_WIDTH_UNDISTORTED,FORMAT_LEAP_IMAGE_HEIGHT_UNDISTORTED),
        cv_szRightImageUndistorted = cvSize(FORMAT_LEAP_IMAGE_WIDTH_UNDISTORTED,FORMAT_LEAP_IMAGE_HEIGHT_UNDISTORTED);
 bool flagUndistort = true;
+bool flagShowLeftImage             = true,
+     flagShowRightImage            = true,
+     flagShowLeftImageUndistorted  = true,
+     flagShowRightImageUndistorted = true;
+/************************
+ * End OpenCV variables *
+ ************************/
 
 
 class SampleListener : public Listener {
@@ -231,51 +240,41 @@ void SampleListener::onFrame(const Controller& controller) {
         }
         // Construct undistorted image
         if (flagUndistort) {
-            //unsigned char image_buffer_undistorted[image.height()][image.width()];
-            //bool image_buffer_undistorted_hasdata[image.height()][image.width()];
-            //unsigned char image_buffer_undistorted[image.height()*image.width()] = {0};
-            //unsigned char image_buffer_undistorted[image.height()*image.width()];
             unsigned char image_buffer_undistorted[FORMAT_LEAP_IMAGE_HEIGHT_UNDISTORTED*
                                                    FORMAT_LEAP_IMAGE_WIDTH_UNDISTORTED] = {0};
-            //std::fill_n(image_buffer_undistorted, image.height()*image.width(), 0);
             for (int row = 0; row < FORMAT_LEAP_IMAGE_HEIGHT_UNDISTORTED; row++) {
                 for (int col = 0; col < FORMAT_LEAP_IMAGE_WIDTH_UNDISTORTED; col++) {
-                    int pixelIndCurrent = row*image.width() + col;
-                    Leap::Vector normSlopes(((float) col)/image.width(), ((float) row)/image.height(), 0.0f);
+                    int pixelIndCurrent = row*FORMAT_LEAP_IMAGE_WIDTH_UNDISTORTED + col;
+                    Leap::Vector normSlopes(((float) col)/FORMAT_LEAP_IMAGE_WIDTH_UNDISTORTED,
+                                            ((float) row)/FORMAT_LEAP_IMAGE_HEIGHT_UNDISTORTED, 0.0f);
                     Leap::Vector slope((normSlopes.x - image.rayOffsetX())/image.rayScaleX(),
                                        (normSlopes.y - image.rayOffsetY())/image.rayScaleY(), 0.0f);
                     Leap::Vector pixel = image.warp(slope);
-                    //if(pixel.x >= 0 && pixel.x <= FORMAT_LEAP_IMAGE_WIDTH_UNDISTORTED &&
-                    //   pixel.y >= 0 && pixel.y <= FORMAT_LEAP_IMAGE_HEIGHT_UNDISTORTED){
                     if(pixel.x >= 0 && pixel.x <= image.width() &&
                        pixel.y >= 0 && pixel.y <= image.height()){
-                        //int data_index = floor(pixel.y) * image.width() + floor(pixel.x);
                         int pixelIndUndistorted = floor(pixel.y) * image.width() + floor(pixel.x);
-                        //image_buffer_undistorted_hasdata[(int) pixel.y][(int) pixel.x] = true;
-                        //unsigned char brightness = image.data()[data_index];
-                        //image_buffer_undistorted[pixelIndUndistorted] = image_buffer[pixelIndCurrent];
                         image_buffer_undistorted[pixelIndCurrent] = image_buffer[pixelIndUndistorted];
-                        //image_buffer_undistorted[0][0] = image.data()[data_index];
                     }
                 }
             }
             // Copy frames from buffer to OpenCV images
-            for (int row=0; row<image.height(); row++) {
-                for (int col=0; col<image.width(); col++) {
-                    int pixelIndCurrent = row*image.width() + col;
+            for (int row = 0; row < FORMAT_LEAP_IMAGE_HEIGHT_UNDISTORTED; row++) {
+                for (int col = 0; col < FORMAT_LEAP_IMAGE_WIDTH_UNDISTORTED; col++) {
+                    int pixelIndCurrent = row*FORMAT_LEAP_IMAGE_WIDTH_UNDISTORTED + col;
                     if (iCamera == 0) {
-                        //cvSet2D(cv_leftImageUndistorted,row,col,cvScalar(image_buffer_undistorted[row][col]));
-                        //cvSet2D(cv_leftImageUndistorted,row,col,cvScalar(0.0));
                         cvSet2D(cv_leftImageUndistorted,row,col,cvScalar(image_buffer_undistorted[pixelIndCurrent]));
                     }
                     else if (iCamera == 1) {
-                        //cvSet2D(cv_rightImageUndistorted,row,col,cvScalar(image_buffer_undistorted[row][col]));
                         cvSet2D(cv_rightImageUndistorted,row,col,cvScalar(image_buffer_undistorted[pixelIndCurrent]));
                     }
                 }
             }
-            cvShowImage("Left image undistorted",cv_leftImageUndistorted);
-            cvShowImage("Right image undistorted",cv_rightImageUndistorted);
+            if (flagShowLeftImageUndistorted) {
+                cvShowImage("Left image undistorted",cv_leftImageUndistorted);
+            }
+            if (flagShowRightImageUndistorted) {
+                cvShowImage("Right image undistorted",cv_rightImageUndistorted);
+            }
 
         }
 
@@ -288,8 +287,12 @@ void SampleListener::onFrame(const Controller& controller) {
                 cursor++;
             }
         }
-        cvShowImage("Left image",cv_leftImage);
-        cvShowImage("Right image",cv_rightImage);
+        if (flagShowLeftImage) {
+            cvShowImage("Left image",cv_leftImage);
+        }
+        if (flagShowRightImage) {
+            cvShowImage("Right image",cv_rightImage);
+        }
 
         char key = cvWaitKey(10);
         if (key==27)
