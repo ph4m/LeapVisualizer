@@ -14,6 +14,8 @@ add_executable (Sample
 
 target_link_libraries (Sample ${LEAP_LIBRARIES} -lz)
 
-find_package(OpenCV 2.4.10 REQUIRED)
-include_directories(${OpenCV_INCLUDE_DIRS})
-add_subdirectory(${CMAKE_SOURCE_DIR}/src/LeapVisualizerOpenCV)
+#find_package(OpenCV 2.4.10 REQUIRED)
+#include_directories(${OpenCV_INCLUDE_DIRS})
+#add_subdirectory(${CMAKE_SOURCE_DIR}/src/LeapVisualizerOpenCV)
+
+add_subdirectory(src)
