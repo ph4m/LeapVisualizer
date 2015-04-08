@@ -9,6 +9,7 @@
 #include <iostream>
 #include <string.h>
 #include "Leap.h"
+#include <thread>
 //#include <boost/thread.hpp>
 #include "LeapVisualizerCore.h"
 
@@ -288,7 +289,13 @@ namespace LeapVisualizer {
     void start_capture()
     {
         //boost::thread capture_thread(capture);
+        std::thread capture_thread(capture);
+        capture_thread.detach();
         std::cout << "Starting capture thread" << std::endl;
+    }
+
+    void stop_capture()
+    {
     }
 
     bool getFlagIsCapturing() {

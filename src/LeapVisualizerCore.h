@@ -13,7 +13,7 @@ namespace LeapVisualizer {
 
     float getPalmPosition(int iDim);
     bool getFlagIsCapturing();
-
+    void stop_capture();
 }
 
 
